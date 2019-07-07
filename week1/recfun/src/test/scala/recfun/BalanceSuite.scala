@@ -26,4 +26,8 @@ class BalanceSuite extends FunSuite {
     assert(!balance("())(".toList))
   }
 
+  test("balance: '(' at the end") {
+    assert(!balance("(((hello)there)you)(".toList))
+  }
+
 }
