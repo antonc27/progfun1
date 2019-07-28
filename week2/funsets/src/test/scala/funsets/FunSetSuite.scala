@@ -98,6 +98,7 @@ class FunSetSuite extends FunSuite {
        * the test fails. This helps identifying which assertion failed.
        */
       assert(contains(s1, 1), "Singleton")
+      assert(!contains(s1, 2), "Singleton")
     }
   }
 
@@ -110,5 +111,47 @@ class FunSetSuite extends FunSuite {
     }
   }
 
+  test("intersect contains only common part") {
+    new TestSets {
+      val s = union(s1, s2)
+      val intersect1 = intersect(s, s1)
+      assert(contains(intersect1, 1), "Intersect 1")
+      assert(!contains(intersect1, 2), "Intersect 1")
 
+      val intersect2 = intersect(s, s2)
+      assert(!contains(intersect2, 1), "Intersect 2")
+      assert(contains(intersect2, 2), "Intersect 2")
+
+      val intersectEmpty = intersect(s1, s2)
+      assert(!contains(intersectEmpty, 1), "Intersect empty")
+      assert(!contains(intersectEmpty, 2), "Intersect empty")
+    }
+  }
+
+  test("diff contains only part left from subtraction") {
+    new TestSets {
+      val s = union(s1, s2)
+      val subtraction1 = diff(s, s1)
+      assert(!contains(subtraction1, 1), "Diff 1")
+      assert(contains(subtraction1, 2), "Diff 1")
+
+      val subtraction2 = diff(s, s2)
+      assert(contains(subtraction2, 1), "Diff 2")
+      assert(!contains(subtraction2, 2), "Diff 2")
+
+      val subtractionEmpty = diff(subtraction1, subtraction1)
+      assert(!contains(subtractionEmpty, 1), "Diff empty")
+      assert(!contains(subtractionEmpty, 2), "Diff empty")
+    }
+  }
+
+  test("filtered contains only part left from applying predicate") {
+    new TestSets {
+      val s = union(s1, union(s2, s3))
+      val filtered = filter(s, _ % 2 == 1)
+      assert(contains(filtered, 1), "Filter")
+      assert(!contains(filtered, 2), "Filter")
+      assert(contains(filtered, 3), "Filter")
+    }
+  }
 }
