@@ -154,4 +154,35 @@ class FunSetSuite extends FunSuite {
       assert(contains(filtered, 3), "Filter")
     }
   }
+
+  test("forall checks odd numbers") {
+    new TestSets {
+      val s = union(s1, s3)
+
+      assert(forall(s, _ % 2 == 1), "Forall odd")
+      assert(!forall(s, _ % 2 == 0), "Forall even")
+    }
+  }
+
+  test("exists checks affiliation") {
+    new TestSets {
+      val s = union(s1, s3)
+
+      assert(exists(s, _ % 2 == 1), "Exists odd")
+      assert(!exists(s, _ == 5), "Non existing element")
+    }
+  }
+
+  test("mapping works for squares") {
+    new TestSets {
+      val s = union(s1, s3)
+
+      val squares = map(s, x => x * x)
+
+      assert(contains(squares, 1), "Map 1")
+      assert(!contains(squares, 3), "Map 3")
+      assert(!contains(squares, 4), "Map 4")
+      assert(contains(squares, 9), "Map 9")
+    }
+  }
 }
