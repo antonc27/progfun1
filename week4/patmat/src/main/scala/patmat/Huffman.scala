@@ -88,14 +88,18 @@ object Huffman {
     def squash(current: (Char, Int), charsWithCounts: List[(Char, Int)]): List[(Char, Int)] = charsWithCounts match {
       case List() => List(current)
       case c :: xc => if (current._1 == c._1) {
-        (current._1, current._2 + c._2) :: xc
+        squash((current._1, current._2 + c._2), xc)
       } else {
         current :: squash(c, xc)
       }
     }
 
-    val x = mapCounts(chars)
-    squash(x.head, x.tail)
+    if (chars.isEmpty) {
+      List()
+    } else {
+      val x = mapCounts(chars)
+      squash(x.head, x.tail)
+    }
   }
 
   private def insert[T](comp: (T, T) => Boolean, elem: T, list: List[T]): List[T] = list match {
