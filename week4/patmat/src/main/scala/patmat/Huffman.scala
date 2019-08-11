@@ -18,16 +18,24 @@ object Huffman {
    * present in the leaves below it. The weight of a `Fork` node is the sum of the weights of these
    * leaves.
    */
-    abstract class CodeTree
+  abstract class CodeTree
+
   case class Fork(left: CodeTree, right: CodeTree, chars: List[Char], weight: Int) extends CodeTree
+
   case class Leaf(char: Char, weight: Int) extends CodeTree
-  
+
 
   // Part 1: Basics
-    def weight(tree: CodeTree): Int = ??? // tree match ...
-  
-    def chars(tree: CodeTree): List[Char] = ??? // tree match ...
-  
+  def weight(tree: CodeTree): Int = tree match {
+    case Leaf(_, w) => w
+    case Fork(l, r, _, _) => weight(l) + weight(r)
+  }
+
+  def chars(tree: CodeTree): List[Char] = tree match {
+    case Leaf(c, _) => c :: Nil
+    case Fork(l, r, _, _) => chars(l) ::: chars(r)
+  }
+
   def makeCodeTree(left: CodeTree, right: CodeTree) =
     Fork(left, right, chars(left) ::: chars(right), weight(left) + weight(right))
 
@@ -69,7 +77,33 @@ object Huffman {
    *       println("integer is  : "+ theInt)
    *   }
    */
-    def times(chars: List[Char]): List[(Char, Int)] = ???
+  def times(chars: List[Char]): List[(Char, Int)] = {
+    def mapCounts(chars: List[Char]): List[(Char, Int)] = chars match {
+      case List() => List()
+      case c :: xc => move((c, 1), mapCounts(xc))
+    }
+
+    def move(toMove: (Char, Int), charsWithCounts: List[(Char, Int)]): List[(Char, Int)] = charsWithCounts match {
+      case List() => List(toMove)
+      case c :: xc => if (toMove._1 < c._1) {
+        toMove :: charsWithCounts
+      } else {
+        c :: move(toMove, xc)
+      }
+    }
+
+    def squash(current: (Char, Int), charsWithCounts: List[(Char, Int)]): List[(Char, Int)] = charsWithCounts match {
+      case List() => List(current)
+      case c :: xc => if (current._1 == c._1) {
+        (current._1, current._2 + c._2) :: xc
+      } else {
+        current :: squash(c, xc)
+      }
+    }
+
+    val x = mapCounts(chars)
+    squash(x.head, x.tail)
+  }
   
   /**
    * Returns a list of `Leaf` nodes for a given frequency table `freqs`.
