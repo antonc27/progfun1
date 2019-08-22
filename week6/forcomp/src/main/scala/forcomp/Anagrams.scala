@@ -34,10 +34,15 @@ object Anagrams {
    *
    *  Note: you must use `groupBy` to implement this method!
    */
-  def wordOccurrences(w: Word): Occurrences = ???
+  def wordOccurrences(w: Word): Occurrences =
+      w.toLowerCase
+      .groupBy((c: Char) => c)
+      .map { case (c, l) => (c, l.length) }
+      .toList
+      .sorted
 
   /** Converts a sentence into its character occurrence list. */
-  def sentenceOccurrences(s: Sentence): Occurrences = ???
+  def sentenceOccurrences(s: Sentence): Occurrences = wordOccurrences(s mkString "")
 
   /** The `dictionaryByOccurrences` is a `Map` from different occurrences to a sequence of all
    *  the words that have that occurrence count.
@@ -54,10 +59,11 @@ object Anagrams {
    *    List(('a', 1), ('e', 1), ('t', 1)) -> Seq("ate", "eat", "tea")
    *
    */
-  lazy val dictionaryByOccurrences: Map[Occurrences, List[Word]] = ???
+  lazy val dictionaryByOccurrences: Map[Occurrences, List[Word]] =
+      dictionary.groupBy((w: Word) => wordOccurrences(w))
 
   /** Returns all the anagrams of a given word. */
-  def wordAnagrams(word: Word): List[Word] = ???
+  def wordAnagrams(word: Word): List[Word] = dictionaryByOccurrences.getOrElse(wordOccurrences(word), List())
 
   /** Returns the list of all subsets of the occurrence list.
    *  This includes the occurrence itself, i.e. `List(('k', 1), ('o', 1))`
@@ -81,7 +87,26 @@ object Anagrams {
    *  Note that the order of the occurrence list subsets does not matter -- the subsets
    *  in the example above could have been displayed in some other order.
    */
-  def combinations(occurrences: Occurrences): List[Occurrences] = ???
+  def combinations(occurrencees: Occurrences): List[Occurrences] = {
+      val generations = for {
+      	  (char, occurCount) <- occurrencees
+      } yield ( for {
+      	  count <- 0 to occurCount
+      } yield (char, count)).toList
+
+      def decartProduct(input: List[Occurrences]): List[Occurrences] = input match {
+      	  case Nil => List(List())
+	  case x :: xs => {
+	      val rest = decartProduct(xs)
+	      for {
+	      	  occur <- x
+		  others <- rest 
+	      } yield List(occur) ++ others
+	  }
+      }
+
+      decartProduct(generations).map(occurences => occurences.filter { case (char, count) => count != 0 })
+  }
 
   /** Subtracts occurrence list `y` from occurrence list `x`.
    *
@@ -93,7 +118,9 @@ object Anagrams {
    *  Note: the resulting value is an occurrence - meaning it is sorted
    *  and has no zero-entries.
    */
-  def subtract(x: Occurrences, y: Occurrences): Occurrences = ???
+  def subtract(x: Occurrences, y: Occurrences): Occurrences = {
+      (y foldLeft x.toMap)((map, occur) => map.updated(occur._1, map(occur._1) - occur._2)).toList.sorted.filter(occur => occur._2 != 0)
+  }
 
   /** Returns a list of all anagram sentences of the given sentence.
    *
